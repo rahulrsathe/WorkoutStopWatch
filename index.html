@@ -2,8 +2,16 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
 <title>Workout Stopwatch — Demo</title>
+
+<!-- PWA: launch fullscreen when added to home screen -->
+<meta name="theme-color" content="#6200EE" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="Stopwatch" />
+<link rel="manifest" href='data:application/manifest+json,{"name":"Workout Stopwatch","short_name":"Stopwatch","start_url":".","scope":".","display":"standalone","orientation":"portrait","background_color":"%23fafafa","theme_color":"%236200EE"}' />
 <style>
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
   html, body { height: 100%; }
@@ -29,7 +37,7 @@
   .app-bar {
     background: #6200EE;
     color: white;
-    padding: 18px 16px;
+    padding: calc(18px + env(safe-area-inset-top)) 16px 18px;
     font-size: 20px;
     font-weight: 500;
     box-shadow: 0 2px 4px rgba(0,0,0,0.2);
