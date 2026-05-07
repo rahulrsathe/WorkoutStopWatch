@@ -116,6 +116,37 @@
   .menu-item.selected { background: #f3eaff; color: #6200EE; font-weight: 600; }
   .menu-item:last-child { border-bottom: none; }
 
+  .mode-toggle {
+    margin: 12px 20px 0;
+    padding: 10px 14px;
+    background: white;
+    border: 1.5px solid #ddd;
+    border-radius: 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    user-select: none;
+    transition: border-color 0.2s, background 0.2s;
+  }
+  .mode-toggle.on { border-color: #6200EE; background: #f3eaff; }
+  .mode-toggle .label-group .title { font-size: 14px; font-weight: 600; color: #333; }
+  .mode-toggle.on .label-group .title { color: #3a0d6b; }
+  .mode-toggle .label-group .sub { font-size: 11px; color: #888; margin-top: 2px; }
+  .mode-toggle.on .label-group .sub { color: #6200EE; }
+  .switch {
+    width: 42px; height: 24px; background: #ccc; border-radius: 12px;
+    position: relative; transition: background 0.2s; flex-shrink: 0;
+  }
+  .switch::after {
+    content: ""; position: absolute; top: 2px; left: 2px;
+    width: 20px; height: 20px; background: white; border-radius: 50%;
+    transition: left 0.2s; box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+  }
+  .mode-toggle.on .switch { background: #6200EE; }
+  .mode-toggle.on .switch::after { left: 20px; }
+  .mode-toggle.locked { opacity: 0.45; pointer-events: none; }
+
   .exercise-label {
     margin: 18px 20px 0;
     padding: 12px 14px;
@@ -237,6 +268,14 @@
     <div class="dropdown-menu" id="dropdownMenu"></div>
   </div>
 
+  <div id="modeToggle" class="mode-toggle">
+    <div class="label-group">
+      <div class="title">Express Mode</div>
+      <div class="sub">1 set per exercise · Bench/Deadlift/Squat reduced</div>
+    </div>
+    <div class="switch"></div>
+  </div>
+
   <div class="exercise-label">
     <span id="exerciseName">Bench Press Inclined</span>
     <span class="set-tag" id="setTag">Set 1</span>
@@ -315,6 +354,7 @@
   let setNum = 1;
   let lapCount = 0;
   let running = false;
+  let quickMode = false;
   let totalStart = 0;       // ms epoch when total began
   let lapStart = 0;         // ms epoch when current lap began
   let tickHandle = null;
@@ -333,6 +373,24 @@
   const lapList       = $("lapList");
   const startBtn      = $("startBtn");
   const lapBtn        = $("lapBtn");
+  const modeToggle    = $("modeToggle");
+
+  // ---- Effective set count (respects Quick Mode) ----
+  function effectiveSets(ex) {
+    if (!quickMode) return ex.sets;
+    const n = ex.name;
+    if (n.startsWith("Bench Press")) return 2;
+    if (n === "Deadlifts") return 3;
+    if (n === "Squats") return 3;
+    return 1;
+  }
+
+  modeToggle.addEventListener("click", () => {
+    if (running) return;
+    quickMode = !quickMode;
+    modeToggle.classList.toggle("on", quickMode);
+    updateExerciseLabel();
+  });
 
   // ---- Build dropdown ----
   function renderMenu() {
@@ -370,7 +428,7 @@
       return;
     }
     exerciseName.textContent = list[exerciseIdx].name;
-    setTag.textContent = "Set " + setNum + " / " + list[exerciseIdx].sets;
+    setTag.textContent = "Set " + setNum + " / " + effectiveSets(list[exerciseIdx]);
   }
 
   // ---- Time formatting ----
@@ -411,6 +469,7 @@
     startBtn.classList.remove("btn-start");
     startBtn.classList.add("btn-stop");
     lapBtn.disabled = false;
+    modeToggle.classList.add("locked");
     updateExerciseLabel();
     renderLapList();
     tick();
@@ -426,6 +485,7 @@
     startBtn.classList.remove("btn-stop");
     startBtn.classList.add("btn-start");
     lapBtn.disabled = true;
+    modeToggle.classList.remove("locked");
     mainTime.classList.add("idle");
     mainTime.textContent = "00:00";
     subTime.textContent = "";
@@ -449,7 +509,7 @@
     lapCount += 1;
 
     // Advance: next set within exercise, else next exercise
-    if (setNum < current.sets) {
+    if (setNum < effectiveSets(current)) {
       setNum += 1;
     } else {
       setNum = 1;
