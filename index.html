@@ -12,15 +12,11 @@
     padding: 0;
     background: #fafafa;
     font-family: 'Roboto', 'Segoe UI', sans-serif;
-    display: flex;
-    justify-content: center;
-    align-items: stretch;
     min-height: 100vh;
     min-height: 100dvh;
   }
   .phone {
     width: 100%;
-    max-width: 480px;
     min-height: 100vh;
     min-height: 100dvh;
     background: #fafafa;
@@ -28,21 +24,6 @@
     overflow: hidden;
     display: flex;
     flex-direction: column;
-  }
-  /* Desktop preview: re-add the phone framing */
-  @media (min-width: 600px) {
-    body {
-      background: #1e1e1e;
-      padding: 20px;
-      align-items: flex-start;
-    }
-    .phone {
-      width: 380px;
-      min-height: 760px;
-      max-height: calc(100vh - 40px);
-      border-radius: 28px;
-      box-shadow: 0 20px 50px rgba(0,0,0,0.5);
-    }
   }
   /* App bar */
   .app-bar {
