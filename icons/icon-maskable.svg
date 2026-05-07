@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#7c30ff"/>
+      <stop offset="100%" stop-color="#4b00b0"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="512" height="512" fill="url(#bg)"/>
+
+  <g transform="translate(256, 256) scale(0.78) translate(-256, -220)">
+    <g transform="translate(256, 220)">
+      <rect x="-22" y="-148" width="44" height="22" rx="6" fill="white"/>
+      <rect x="-10" y="-130" width="20" height="14" fill="white"/>
+
+      <g transform="rotate(-35)">
+        <rect x="-18" y="-128" width="36" height="14" rx="4" fill="white"/>
+      </g>
+      <g transform="rotate(35)">
+        <rect x="-18" y="-128" width="36" height="14" rx="4" fill="white"/>
+      </g>
+
+      <circle r="112" fill="white"/>
+      <circle r="100" fill="none" stroke="#f3eaff" stroke-width="3"/>
+
+      <g stroke="#6200EE" stroke-width="7" stroke-linecap="round">
+        <line x1="0" y1="-92" x2="0" y2="-76"/>
+        <line x1="92" y1="0"  x2="76" y2="0"/>
+        <line x1="0" y1="92"  x2="0" y2="76"/>
+        <line x1="-92" y1="0" x2="-76" y2="0"/>
+      </g>
+
+      <line x1="0" y1="8" x2="0" y2="-68" stroke="#3a0d6b" stroke-width="9" stroke-linecap="round"/>
+      <line x1="0" y1="0" x2="48" y2="-12" stroke="#03DAC6" stroke-width="7" stroke-linecap="round"/>
+
+      <circle r="9" fill="#3a0d6b"/>
+    </g>
+
+    <g transform="translate(256, 410)" fill="white">
+      <rect x="-90" y="-9" width="180" height="18" rx="5"/>
+      <rect x="-110" y="-26" width="22" height="52" rx="4"/>
+      <rect x="-138" y="-36" width="24" height="72" rx="5"/>
+      <rect x="88"  y="-26" width="22" height="52" rx="4"/>
+      <rect x="114" y="-36" width="24" height="72" rx="5"/>
+    </g>
+  </g>
+</svg>
