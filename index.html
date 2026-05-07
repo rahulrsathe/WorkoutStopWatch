@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+<title>Workout Stopwatch — Demo</title>
+<style>
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  body {
+    margin: 0;
+    padding: 20px;
+    background: #1e1e1e;
+    font-family: 'Roboto', 'Segoe UI', sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    min-height: 100vh;
+  }
+  .phone {
+    width: 360px;
+    max-width: 100%;
+    min-height: 700px;
+    background: #fafafa;
+    border-radius: 28px;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+  /* App bar */
+  .app-bar {
+    background: #6200EE;
+    color: white;
+    padding: 18px 16px;
+    font-size: 20px;
+    font-weight: 500;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .wake-toggle {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    background: rgba(255,255,255,0.15);
+    padding: 6px 10px;
+    border-radius: 14px;
+    cursor: pointer;
+    user-select: none;
+  }
+  .wake-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #888;
+    transition: background 0.2s;
+  }
+  .wake-toggle.active .wake-dot { background: #00E676; box-shadow: 0 0 6px #00E676; }
+
+  .dropdown-label {
+    margin: 18px 24px 6px;
+    font-size: 11px;
+    color: #6200EE;
+    font-weight: 600;
+    letter-spacing: 1px;
+  }
+  .dropdown {
+    margin: 0 20px;
+    padding: 14px 16px;
+    border: 1.5px solid #6200EE;
+    border-radius: 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: white;
+    color: #333;
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+    user-select: none;
+    position: relative;
+  }
+  .dropdown .arrow { color: #6200EE; font-size: 12px; transition: transform 0.2s; }
+  .dropdown.open .arrow { transform: rotate(180deg); }
+  .dropdown-menu {
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0;
+    right: 0;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+    overflow: hidden;
+    z-index: 10;
+    display: none;
+  }
+  .dropdown.open .dropdown-menu { display: block; }
+  .menu-item {
+    padding: 14px 16px;
+    font-size: 16px;
+    color: #333;
+    border-bottom: 1px solid #eee;
+    cursor: pointer;
+  }
+  .menu-item:hover { background: #f5f5f5; }
+  .menu-item.selected { background: #f3eaff; color: #6200EE; font-weight: 600; }
+  .menu-item:last-child { border-bottom: none; }
+
+  .exercise-label {
+    margin: 18px 20px 0;
+    padding: 12px 14px;
+    background: #f3eaff;
+    border-left: 4px solid #6200EE;
+    border-radius: 4px;
+    font-size: 15px;
+    font-weight: 600;
+    color: #3a0d6b;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .exercise-label .set-tag {
+    font-size: 13px;
+    background: #6200EE;
+    color: white;
+    padding: 3px 10px;
+    border-radius: 10px;
+  }
+
+  .time-section {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 30px 20px;
+  }
+  .main-time {
+    font-size: 76px;
+    font-weight: 800;
+    color: #111;
+    letter-spacing: 2px;
+    font-variant-numeric: tabular-nums;
+    line-height: 1;
+  }
+  .main-time.idle { color: #bbb; }
+  .sub-time {
+    margin-top: 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 16px;
+    color: #666;
+    height: 24px;
+  }
+  .lap-badge {
+    background: #6200EE;
+    color: white;
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-size: 13px;
+    font-weight: 600;
+  }
+  .lap-list {
+    margin: 0 20px 14px;
+    max-height: 160px;
+    overflow-y: auto;
+    font-size: 13px;
+    color: #555;
+    border-top: 1px solid #eee;
+    padding-top: 6px;
+  }
+  .lap-list:empty { display: none; }
+  .lap-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 6px 8px;
+    border-bottom: 1px solid #eee;
+  }
+  .lap-row:first-child { background: #f3eaff; border-radius: 4px; font-weight: 600; }
+
+  .button-row {
+    display: flex;
+    gap: 14px;
+    padding: 0 24px 32px;
+  }
+  .btn {
+    flex: 1;
+    padding: 16px 0;
+    border-radius: 28px;
+    border: none;
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: transform 0.05s, box-shadow 0.2s;
+  }
+  .btn:active { transform: scale(0.97); }
+  .btn-start { background: #03DAC6; color: #003D38; box-shadow: 0 4px 10px rgba(3,218,198,0.4); }
+  .btn-stop  { background: #CF6679; color: white;   box-shadow: 0 4px 10px rgba(207,102,121,0.4); }
+  .btn-lap   { background: white;   color: #6200EE; border: 2px solid #6200EE; }
+  .btn:disabled { opacity: 0.35; cursor: not-allowed; box-shadow: none; }
+
+  .footer-note {
+    text-align: center;
+    color: #888;
+    font-size: 11px;
+    padding: 0 0 14px;
+  }
+</style>
+</head>
+<body>
+
+<div class="phone">
+  <div class="app-bar">
+    <span>Workout Stopwatch</span>
+    <div id="wakeToggle" class="wake-toggle" title="Keep screen on">
+      <span class="wake-dot"></span><span id="wakeLabel">Screen</span>
+    </div>
+  </div>
+
+  <div class="dropdown-label">SELECT WORKOUT</div>
+  <div id="dropdown" class="dropdown">
+    <span id="dropdownText">Chest + Triceps</span>
+    <span class="arrow">&#9660;</span>
+    <div class="dropdown-menu" id="dropdownMenu"></div>
+  </div>
+
+  <div class="exercise-label">
+    <span id="exerciseName">Bench Press Inclined</span>
+    <span class="set-tag" id="setTag">Set 1</span>
+  </div>
+
+  <div class="time-section">
+    <div id="mainTime" class="main-time idle">00:00</div>
+    <div class="sub-time">
+      <span id="subTime"></span>
+      <span id="lapBadge" class="lap-badge" style="display:none">Lap 1</span>
+    </div>
+  </div>
+
+  <div class="lap-list" id="lapList"></div>
+
+  <div class="button-row">
+    <button id="startBtn" class="btn btn-start">START</button>
+    <button id="lapBtn" class="btn btn-lap" disabled>LAP</button>
+  </div>
+
+  <div class="footer-note">Tap LAP to advance set / exercise</div>
+</div>
+
+<script>
+  // ---- Workout data (per-exercise set counts) ----
+  // Warmup runs before every workout day
+  const WARMUP = [
+    { name: "Pull Ups (Warmup)", sets: 2 },
+    { name: "Dips (Warmup)",     sets: 2 }
+  ];
+  const WORKOUTS = {
+    "Chest + Triceps": [
+      ...WARMUP,
+      { name: "Bench Press Inclined",            sets: 3 },
+      { name: "Bench Press Flat",                sets: 3 },
+      { name: "Bench Press Declined",            sets: 3 },
+      { name: "Skull Crushers (Barbell)",        sets: 2 },
+      { name: "Cable Fly Top Down",              sets: 2 },
+      { name: "Cable Fly Horizontal",            sets: 2 },
+      { name: "Cable Fly Pushdown",              sets: 2 },
+      { name: "Triceps Ext Rope Pull",           sets: 2 },
+      { name: "Triceps Cable Kickback (Left)",   sets: 2 },
+      { name: "Triceps Cable Kickback (Right)",  sets: 2 },
+      { name: "Overhead Cable Tricep Ext",       sets: 2 },
+      { name: "Peck Deck Fly",                   sets: 2 }
+    ],
+    "Back + Biceps": [
+      ...WARMUP,
+      { name: "Deadlifts",                       sets: 4 },
+      { name: "Incline Biceps Preacher (Left)",  sets: 2 },
+      { name: "Incline Biceps Preacher (Right)", sets: 2 },
+      { name: "Lat Pulldown (Overhand)",         sets: 2 },
+      { name: "Lat Pulldown (Underhand)",        sets: 2 },
+      { name: "Seated Cable Low Row",            sets: 2 },
+      { name: "Bicep Curl (Dumbbell)",           sets: 2 },
+      { name: "Seated Incline Dumbbell Curl",    sets: 2 },
+      { name: "Bicep Curl (Barbell)",            sets: 2 }
+    ],
+    "Legs + Shoulders": [
+      ...WARMUP,
+      { name: "Squats",          sets: 3 },
+      { name: "Leg Press",       sets: 3 },
+      { name: "Walking Lunges",  sets: 2 },
+      { name: "Shoulder Press",  sets: 3 },
+      { name: "Lateral Raise",   sets: 2 }
+    ]
+  };
+
+  // ---- State ----
+  let selectedWorkout = "Chest + Triceps";
+  let exerciseIdx = 0;
+  let setNum = 1;
+  let lapCount = 0;
+  let running = false;
+  let totalStart = 0;       // ms epoch when total began
+  let lapStart = 0;         // ms epoch when current lap began
+  let tickHandle = null;
+  let laps = [];            // [{label, lapMs, totalMs}]
+
+  // ---- Elements ----
+  const $ = (id) => document.getElementById(id);
+  const dropdown      = $("dropdown");
+  const dropdownText  = $("dropdownText");
+  const dropdownMenu  = $("dropdownMenu");
+  const exerciseName  = $("exerciseName");
+  const setTag        = $("setTag");
+  const mainTime      = $("mainTime");
+  const subTime       = $("subTime");
+  const lapBadge      = $("lapBadge");
+  const lapList       = $("lapList");
+  const startBtn      = $("startBtn");
+  const lapBtn        = $("lapBtn");
+
+  // ---- Build dropdown ----
+  function renderMenu() {
+    dropdownMenu.innerHTML = "";
+    Object.keys(WORKOUTS).forEach(name => {
+      const item = document.createElement("div");
+      item.className = "menu-item" + (name === selectedWorkout ? " selected" : "");
+      item.textContent = name;
+      item.addEventListener("click", (e) => {
+        e.stopPropagation();
+        if (running) return; // don't allow change mid-workout
+        selectedWorkout = name;
+        exerciseIdx = 0;
+        setNum = 1;
+        dropdownText.textContent = name;
+        updateExerciseLabel();
+        renderMenu();
+        dropdown.classList.remove("open");
+      });
+      dropdownMenu.appendChild(item);
+    });
+  }
+  dropdown.addEventListener("click", () => {
+    dropdown.classList.toggle("open");
+  });
+  document.addEventListener("click", (e) => {
+    if (!dropdown.contains(e.target)) dropdown.classList.remove("open");
+  });
+
+  function updateExerciseLabel() {
+    const list = WORKOUTS[selectedWorkout];
+    if (exerciseIdx >= list.length) {
+      exerciseName.textContent = "Workout Complete!";
+      setTag.textContent = "Done";
+      return;
+    }
+    exerciseName.textContent = list[exerciseIdx].name;
+    setTag.textContent = "Set " + setNum + " / " + list[exerciseIdx].sets;
+  }
+
+  // ---- Time formatting ----
+  function fmt(ms) {
+    const s = Math.floor(ms / 1000);
+    const mm = String(Math.floor(s / 60)).padStart(2, "0");
+    const ss = String(s % 60).padStart(2, "0");
+    return mm + ":" + ss;
+  }
+
+  // ---- Tick ----
+  function tick() {
+    const now = Date.now();
+    const lapMs = now - lapStart;
+    const totalMs = now - totalStart;
+    mainTime.textContent = fmt(lapMs);
+    if (lapCount > 0) {
+      subTime.textContent = "Total: " + fmt(totalMs);
+      lapBadge.style.display = "";
+      lapBadge.textContent = "Lap " + (lapCount + 1);
+    } else {
+      subTime.textContent = "";
+      lapBadge.style.display = "none";
+    }
+  }
+
+  // ---- Buttons ----
+  function start() {
+    running = true;
+    lapCount = 0;
+    laps = [];
+    exerciseIdx = 0;
+    setNum = 1;
+    totalStart = Date.now();
+    lapStart = totalStart;
+    mainTime.classList.remove("idle");
+    startBtn.textContent = "STOP";
+    startBtn.classList.remove("btn-start");
+    startBtn.classList.add("btn-stop");
+    lapBtn.disabled = false;
+    updateExerciseLabel();
+    renderLapList();
+    tick();
+    tickHandle = setInterval(tick, 200);
+    requestWakeLock();
+  }
+
+  function stop() {
+    running = false;
+    clearInterval(tickHandle);
+    tickHandle = null;
+    startBtn.textContent = "START";
+    startBtn.classList.remove("btn-stop");
+    startBtn.classList.add("btn-start");
+    lapBtn.disabled = true;
+    mainTime.classList.add("idle");
+    mainTime.textContent = "00:00";
+    subTime.textContent = "";
+    lapBadge.style.display = "none";
+    setNum = 1;
+    exerciseIdx = 0;
+    updateExerciseLabel();
+    releaseWakeLock();
+  }
+
+  function lap() {
+    if (!running) return;
+    const now = Date.now();
+    const lapMs = now - lapStart;
+    const totalMs = now - totalStart;
+    const list = WORKOUTS[selectedWorkout];
+    const current = list[exerciseIdx];
+    const label = current.name + " · Set " + setNum;
+
+    laps.unshift({ label, lapMs, totalMs });
+    lapCount += 1;
+
+    // Advance: next set within exercise, else next exercise
+    if (setNum < current.sets) {
+      setNum += 1;
+    } else {
+      setNum = 1;
+      exerciseIdx += 1;
+    }
+
+    // Reset lap clock
+    lapStart = now;
+    updateExerciseLabel();
+    renderLapList();
+
+    // If we ran out of exercises, stop automatically
+    if (exerciseIdx >= list.length) {
+      tick();
+      setTimeout(stop, 800);
+    }
+  }
+
+  function renderLapList() {
+    lapList.innerHTML = "";
+    laps.forEach((l) => {
+      const row = document.createElement("div");
+      row.className = "lap-row";
+      row.innerHTML =
+        '<span>' + l.label + '</span>' +
+        '<span>Total ' + fmt(l.totalMs) + '</span>';
+      lapList.appendChild(row);
+    });
+  }
+
+  startBtn.addEventListener("click", () => running ? stop() : start());
+  lapBtn.addEventListener("click", lap);
+
+  // ---- Wake Lock (keep screen on) ----
+  let wakeLock = null;
+  const wakeToggle = $("wakeToggle");
+  const wakeLabel  = $("wakeLabel");
+  let wakeWanted = false;
+
+  async function requestWakeLock() {
+    if (!wakeWanted) return;
+    if (!('wakeLock' in navigator)) {
+      wakeLabel.textContent = "Not supported";
+      return;
+    }
+    try {
+      wakeLock = await navigator.wakeLock.request("screen");
+      wakeLock.addEventListener("release", () => { wakeLock = null; });
+      wakeToggle.classList.add("active");
+      wakeLabel.textContent = "Screen ON";
+    } catch (e) {
+      wakeLabel.textContent = "Denied";
+    }
+  }
+  function releaseWakeLock() {
+    if (wakeLock) { wakeLock.release(); wakeLock = null; }
+    wakeToggle.classList.remove("active");
+    wakeLabel.textContent = "Screen";
+  }
+  wakeToggle.addEventListener("click", async () => {
+    wakeWanted = !wakeWanted;
+    if (wakeWanted) await requestWakeLock();
+    else releaseWakeLock();
+  });
+  // Re-acquire on tab visible (browser auto-releases on hide)
+  document.addEventListener("visibilitychange", async () => {
+    if (wakeWanted && document.visibilityState === "visible" && !wakeLock) {
+      await requestWakeLock();
+    }
+  });
+
+  // ---- Init ----
+  renderMenu();
+  updateExerciseLabel();
+</script>
+</body>
+</html>
